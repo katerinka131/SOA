@@ -1,0 +1,84 @@
+specification {
+    element person {
+        style {
+            shape person
+            color green
+        }
+    }
+    element softwareSystem
+    element container
+    element component
+}
+
+model {
+  user = person "Пользователь" "Пользователь социальной сети"
+
+  socialNetwork = softwareSystem "Социальная сеть" {
+    apiGateway = container "API Gateway" {
+      description "Обрабатывает запросы от пользователей и передает их другим сервисам"
+      technology "Node.js, Express"
+    }
+
+    userService = container "User Service" {
+      description "Управление пользователями, регистрация, аутентификация"
+      technology "Python, Django"
+    }
+
+    postService = container "Post Service" {
+      description "Управление постами и комментариями"
+      technology "Go, Gin"
+    }
+
+    statsService = container "Statistics Service" {
+      description "Отслеживание лайков, просмотров и комментариев"
+      technology "Rust, Actix"
+    }
+
+    postgresUserDb = container "PostgreSQL (Users)" {
+      description "Хранение информации о пользователях"
+      technology "Database"
+      style {
+        shape cylinder
+      }
+    }
+
+    postgresPostDb = container "PostgreSQL (Posts)" {
+      description "Хранение постов и комментариев"
+      technology "Database"
+      style {
+        shape cylinder
+      }
+    }
+
+    clickhouseDb = container "ClickHouse" {
+      description "Хранение статистики (лайки, просмотры, комментарии)"
+      technology "Database"
+      style {
+        shape cylinder
+      }
+    }
+
+    kafka = container "Kafka" {
+      description "Обмен сообщениями между сервисами"
+      technology "Message Broker"
+      style {
+        shape queue
+      }
+    }
+  }
+
+  user -> socialNetwork.apiGateway "Использует" "HTTPS"
+  socialNetwork.apiGateway -> socialNetwork.userService "Передает запросы на регистрацию и аутентификацию пользователей" "JSON/HTTPS"
+  socialNetwork.apiGateway -> socialNetwork.postService "Перенаправляет запросы на создание и получение постов" "JSON/HTTPS"
+  socialNetwork.apiGateway -> socialNetwork.statsService "Запрашивает статистику (лайки, просмотры, комментарии)" "JSON/HTTPS"
+
+  socialNetwork.userService -> socialNetwork.postgresUserDb "Читает/записывает" "SQL"
+  socialNetwork.postService -> socialNetwork.postgresPostDb "Читает и записывает" "SQL"
+
+  socialNetwork.postService -> socialNetwork.kafka "Публикует события (например, новые комментарии или лайки)" "JSON"
+  socialNetwork.statsService -> socialNetwork.kafka "Передаёт события" "JSON"
+  socialNetwork.kafka -> socialNetwork.postService "Передает события о новых комментариях (например, обновление статистики)" "JSON"
+  socialNetwork.kafka -> socialNetwork.statsService "Передает события о лайках, просмотрах и комментариях" "JSON"
+
+  socialNetwork.statsService -> socialNetwork.clickhouseDb "читает и записывает" "ClickHouse Protocol"
+}

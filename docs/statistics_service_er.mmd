@@ -1,0 +1,28 @@
+erDiagram
+    STATISTICS {
+        int id PK "ID записи статистики"
+        int post_id FK "ID поста"
+        int views_count "Количество просмотров"
+        int likes_count "Количество лайков"
+        int comments_count "Количество комментариев"
+        datetime last_updated "Дата последнего обновления статистики"
+    }
+
+    USER_ENGAGEMENT {
+        int id PK "ID записи"
+        int user_id FK "ID пользователя"
+        int posts_created "Количество созданных постов"
+        int comments_made "Количество оставленных комментариев"
+        int likes_given "Количество поставленных лайков"
+        int views_made "Количество просмотренных постов"
+        datetime last_updated "Дата последнего обновления"
+    }
+
+        DAILY_STATS {
+        int id PK "ID записи"
+        date record_date "Дата статистики"
+        int total_views "Общее количество просмотров"
+        int total_likes "Общее количество лайков"
+        int total_comments "Общее количество комментариев"
+        int active_users "Количество активных пользователей за день"
+    }
