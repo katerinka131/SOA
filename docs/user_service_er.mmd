@@ -1,0 +1,37 @@
+erDiagram
+    USERS {
+        int id PK "ID пользователя"
+        string username "Имя пользователя"
+        string password_hash "Хэш пароля"
+        string email "Email"
+        datetime created_at "Дата регистрации"
+        string status "Статус пользователя (активен/неактивен)"
+        datetime last_login "Дата последнего входа"
+    }
+
+    ROLES {
+        int id PK "ID роли"
+        string name "Название роли"
+        string description "Описание роли"
+        boolean is_active "Активна ли роль"
+        datetime created_at "Дата создания роли"
+        string permissions "Права доступа"
+    }
+    
+    SESSIONS {
+        int id PK "ID сессии"
+        int user_id FK "ID пользователя"
+        string token "Токен сессии"
+        datetime created_at "Дата создания сессии"
+        datetime expires_at "Дата истечения срока"
+        string user_agent "Информация о пользователе"
+    }
+
+    USER_ROLES {
+        int id PK "ID связи"
+        int user_id FK "ID пользователя"
+        int role_id FK "ID роли"
+        datetime assigned_at "Дата назначения роли"
+    }
+
+   

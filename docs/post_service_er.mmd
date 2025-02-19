@@ -1,0 +1,32 @@
+erDiagram
+    POSTS {
+        int id PK "ID поста"
+        int author_id FK "ID автора"
+        string title "Заголовок поста"
+        text content "Содержимое поста"
+        datetime created_at "Дата создания"
+    }
+
+    LIKES {
+        int id PK "ID лайка"
+        int user_id FK "ID пользователя"
+        int post_id FK "ID поста"
+        datetime created_at "Дата создания лайка"
+        boolean is_removed "Удален ли лайк"
+    }
+
+    VIEWS {
+        int id PK "ID просмотра"
+        int user_id FK "ID пользователя"
+        int post_id FK "ID поста"
+        datetime viewed_at "Дата и время просмотра"
+        string device "Устройство, с которого был выполнен просмотр"
+    }
+
+    COMMENTS {
+        int id PK "ID комментария"
+        int user_id FK "ID пользователя"
+        int post_id FK "ID поста"
+        string content "Текст комментария"
+        datetime created_at "Дата создания комментария"
+    }
