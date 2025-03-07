@@ -1,0 +1,103 @@
+openapi: 3.0.0
+info:
+  title: "User API"
+  description: "Handles user authentication and management"
+  version: "1.0"
+paths:
+  /register:
+    post:
+      summary: "Register a new user"
+      description: "Creates a new user with username, email, and password."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        "200":
+          description: "User registered successfully"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  user_id:
+                    type: string
+
+  /login:
+    post:
+      summary: "Login with username and password"
+      description: "Authenticates a user and returns a token."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        "200":
+          description: "User logged in successfully"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                  user_id:
+                    type: string
+
+  /profile:
+    get:
+      summary: "Get user profile"
+      description: "Fetches the profile information of a user."
+      parameters:
+        - name: username
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "User profile retrieved successfully"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  username:
+                    type: string
+                  email:
+                    type: string
+                  first_name:
+                    type: string
+                  last_name:
+                    type: string
+                  birth_date:
+                    type: string
+                    format: date
+                  phone:
+                    type: string
+                  created_at:
+                    type: string
+                    format: date-time
+                  updated_at:
+                    type: string
+                    format: date-time
