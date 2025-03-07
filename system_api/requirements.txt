@@ -1,0 +1,7 @@
+fastapi
+httpx
+uvicorn
+psycopg2
+sqlalchemy
+bcrypt>=4.0.1
+pytest-mock

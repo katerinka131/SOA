@@ -1,0 +1,40 @@
+version: "3.8"
+networks:
+  my_network:
+
+services:
+  system_api:
+    build: ./system_api
+    ports:
+      - "8000:8000"
+    depends_on:
+      - user_api
+    networks:
+      - my_network
+
+  user_api:
+    build: ./user_api
+    ports:
+      - "8001:8001"
+    depends_on:
+      - db
+    networks:
+      - my_network
+    environment:
+      DATABASE_URL: postgresql://user:password@db:5432/users  # Явно задаем URL
+
+  db:
+    image: postgres
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: users
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - my_network
+
+volumes:
+  db_data:

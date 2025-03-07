@@ -1,0 +1,14 @@
+fastapi
+sqlalchemy
+psycopg2
+passlib
+python-jose
+uvicorn
+pyjwt
+passlib[bcrypt]
+python-multipart
+starlette
+pydantic
+python-dotenv
+bcrypt>=3.2.0,<4.0
+passlib>=1.7.4,<2.0
