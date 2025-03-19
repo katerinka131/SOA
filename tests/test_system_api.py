@@ -167,3 +167,100 @@ async def test_protected_resource_invalid_token(mocker):
     
     assert response.status_code == 401
     assert (await response.json())["detail"] == "Invalid or expired token"
+
+@pytest.mark.asyncio
+async def test_register_success(mocker):
+    mock_post = mocker.patch("httpx.AsyncClient.post", new_callable=AsyncMock)
+    mock_post.return_value.status_code = 200
+    mock_post.return_value.json.return_value = {"username": "testuser", "email": "test@example.com"}
+
+    response = await client.post("http://localhost:8000/register", json={
+        "username": "testuser",
+        "email": "test@example.com",
+        "password": "securepassword"
+    })
+    
+    assert response.status_code == 200
+    assert (await response.json())["username"] == "testuser"
+    assert (await response.json())["email"] == "test@example.com"
+
+@pytest.mark.asyncio
+async def test_login_success(mocker):
+    mock_post = mocker.patch("httpx.AsyncClient.post", new_callable=AsyncMock)
+    mock_post.return_value.status_code = 200
+    mock_post.return_value.json.return_value = {"access_token": "valid_token", "token_type": "bearer"}
+
+    response = await client.post("http://localhost:8000/login", json={
+        "username": "testuser",
+        "password": "securepassword"
+    })
+    
+    assert response.status_code == 200
+    assert (await response.json())["access_token"] == "valid_token"
+    assert (await response.json())["token_type"] == "bearer"
+
+@pytest.mark.asyncio
+async def test_update_profile_success(mocker):
+    mock_put = mocker.patch("httpx.AsyncClient.put", new_callable=AsyncMock)
+    mock_put.return_value.status_code = 200
+    mock_put.return_value.json.return_value = {"first_name": "Test", "last_name": "User"}
+
+    token = "valid_token"
+    response = await client.put("http://localhost:8000/update-profile", json={
+        "first_name": "Test",
+        "last_name": "User",
+        "birth_date": "2000-01-01",
+        "phone": "1234567890",
+        "email": "test@example.com"
+    }, headers={"Authorization": f"Bearer {token}"})
+    
+    assert response.status_code == 200
+    # Используем await для вызова json
+    json_response = await response.json()
+    assert json_response["first_name"] == "Test"
+    assert json_response["last_name"] == "User"
+
+
+@pytest.mark.asyncio
+async def test_get_profile_success(mocker):
+    mock_get = mocker.patch("httpx.AsyncClient.get", new_callable=AsyncMock)
+    mock_get.return_value.status_code = 200
+    mock_get.return_value.json.return_value = {"username": "testuser", "email": "test@example.com"}
+
+    token = "valid_token"
+    response = await client.get("http://localhost:8000/profile", headers={"Authorization": f"Bearer {token}"})
+    
+    assert response.status_code == 200
+    assert (await response.json())["username"] == "testuser"
+    assert (await response.json())["email"] == "test@example.com"
+
+
+@pytest.mark.asyncio
+async def test_protected_resource_success(mocker):
+    mock_get = mocker.patch("httpx.AsyncClient.get", new_callable=AsyncMock)
+    mock_get.return_value.status_code = 200
+    mock_get.return_value.json.return_value = {"message": "Access granted"}
+
+    token = "valid_token"
+    response = await client.get("http://localhost:8000/protected-resource", headers={"Authorization": f"Bearer {token}"})
+    
+    assert response.status_code == 200
+    assert (await response.json())["message"] == "Access granted"
+
+@pytest.mark.asyncio
+async def test_register_missing_username(mocker):
+    response = await client.post("http://localhost:8000/register", json={
+        "email": "test@example.com",
+        "password": "securepassword"
+    })
+    
+    assert response.status_code == 422  # Ошибка из-за отсутствия обязательного поля
+
+@pytest.mark.asyncio
+async def test_login_missing_credentials(mocker):
+    response = await client.post("http://localhost:8000/login", json={})
+    
+    # Ожидаем ошибку с кодом 400
+    assert response.status_code == 400  # Ошибка из-за отсутствия обязательных данных
+
+

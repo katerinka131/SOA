@@ -6,18 +6,21 @@ from pydantic import BaseModel
 import datetime
 import jwt
 from typing import Optional
-from database import init_db, User, SessionLocal
+from .database import init_db, User, SessionLocal
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional
 from fastapi.responses import JSONResponse
 from datetime import date
 from datetime import datetime, timedelta
+import uvicorn
 
 # Настроим CORS
 origins = [
-    "http://localhost:8000",  # Разрешаем запросы с system_api
-    # Можно добавить другие домены, если нужно
+    "http://localhost:8000",
+    "http://localhost:8001",
+    "http://127.0.0.1:8000" 
+    
 ]
 
 app = FastAPI(title="User API", description="Handles user management", version="1.0")
@@ -82,8 +85,8 @@ async def register(user: UserRegister, db: Session = Depends(get_db)):
         username=user.username,
         email=user.email,
         password=hashed_password,
-        created_at=datetime.datetime.utcnow(),
-        updated_at=datetime.datetime.utcnow()
+        created_at=datetime.utcnow(),
+        updated_at=datetime.utcnow()
     )
     db.add(db_user)
     db.commit()
@@ -101,7 +104,6 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = 
 
     return {"access_token": token, "token_type": "bearer"}
 
-from datetime import datetime
 
 @app.put("/update-profile")
 async def update_profile(user_update: UserUpdate, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
@@ -191,5 +193,4 @@ async def verify_token_endpoint(token: str = Depends(oauth2_scheme)):
 
 if __name__ == "__main__":
     init_db()
-    import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)

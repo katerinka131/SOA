@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, Form
 from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel
 import httpx
@@ -13,6 +13,7 @@ app = FastAPI(title="System API", description="Proxy for User API", version="1.0
 
 # Настроим OAuth2
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="http://localhost:8001/login")
+
 
 # Pydantic модели
 class UserRegister(BaseModel):
@@ -43,11 +44,24 @@ async def register(user: UserRegister):
 
 # Логин пользователя
 @app.post("/login")
-async def login(user: UserLogin):
+async def login(
+    username: str = Form(None), 
+    password: str = Form(None), 
+    user: UserLogin | None = None  # Принимаем JSON, если он пришел
+):
+    # Если пришел JSON, используем его данные
+    if user:
+        username = user.username
+        password = user.password
+    
+    # Если данных нет, ошибка
+    if not username or not password:
+        raise HTTPException(status_code=400, detail="Username and password required")
+
     async with httpx.AsyncClient() as client:
         response = await client.post(
             "http://user_api:8001/login",
-            data={"username": user.username, "password": user.password}  # Используем форму для передачи данных
+            data={"username": username, "password": password}  # Отправляем форму
         )
         if response.status_code != 200:
             raise HTTPException(status_code=response.status_code, detail="Invalid credentials")
