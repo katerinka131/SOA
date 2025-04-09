@@ -1,5 +1,14 @@
 FROM python:3.11
+
 WORKDIR /app
+
+# Сначала копируем только requirements.txt
+COPY requirements.txt .
+
+# Устанавливаем зависимости
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Затем копируем остальные файлы
 COPY . .
-RUN pip install -r requirements.txt
-CMD ["python3", "-m", "user_api.main"]
+
+CMD ["python", "main.py"]

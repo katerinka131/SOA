@@ -1,40 +1,101 @@
 version: "3.8"
+
 networks:
   my_network:
 
 services:
   system_api:
-    build: ./system_api
+    volumes:
+      - ./grpc_modules:/app/grpc_modules
+    build:
+      context: ./system_api
+      dockerfile: Dockerfile
     ports:
       - "8000:8000"
+    # УДАЛИТЕ volumes для grpc_modules
     depends_on:
-      - user_api
-    networks:
-      - my_network
-
-  user_api:
-    build: ./user_api
-    ports:
-      - "8001:8001"
-    depends_on:
-      - db
+      grpc_server:
+        condition: service_healthy
     networks:
       - my_network
     environment:
-      DATABASE_URL: postgresql://user:password@db:5432/users  # Явно задаем URL
+      GRPC_SERVER: "grpc_server:50051"
+      PYTHONPATH: "/app"
+    restart: on-failure
 
-  db:
-    image: postgres
+  user_api:
+    build:
+      context: ./user_api
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8001"
+    depends_on:
+      user_db:
+        condition: service_healthy
+    networks:
+      - my_network
+    environment:
+      DATABASE_URL: "postgresql://user:password@user_db:5432/users?connect_timeout=5"
+    
+    restart: on-failure
+
+  grpc_server:
+    build:
+      context: .
+      dockerfile: ./grpc_server/Dockerfile
+    ports:
+      - "50051:50051"
+    volumes:
+      - ./grpc_modules:/app/grpc_modules
+    depends_on:
+      post_db:
+        condition: service_healthy
+    networks:
+      - my_network
+    environment:
+      DATABASE_URL: "postgresql+psycopg2://postgres:postgres@post_db:5432/posts_promocodes?connect_timeout=5"
+      PYTHONPATH: "/app"
+    healthcheck:
+      test: ["CMD-SHELL", "timeout 5s bash -c 'cat < /dev/null > /dev/tcp/localhost/50051' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: on-failure
+
+  user_db:
+    image: postgres:13
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
       POSTGRES_DB: users
-    ports:
-      - "5432:5432"
     volumes:
-      - db_data:/var/lib/postgresql/data
+      - user_db_data:/var/lib/postgresql/data
     networks:
       - my_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d users -t 5"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  post_db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: posts_promocodes
+    volumes:
+      - post_db_data:/var/lib/postgresql/data
+    networks:
+      - my_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d posts_promocodes -t 5"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
 
 volumes:
-  db_data:
+  user_db_data:
+  post_db_data:

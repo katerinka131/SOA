@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+package grpc_modules.promocodes;
+import "google/protobuf/timestamp.proto"; 
+service PromocodeService {
+    rpc CreatePromocode (CreatePromocodeRequest) returns (PromocodeResponse);
+    rpc GetPromocode (GetPromocodeRequest) returns (PromocodeResponse);
+    rpc UpdatePromocode (UpdatePromocodeRequest) returns (PromocodeResponse);
+    rpc DeletePromocode (DeletePromocodeRequest) returns (EmptyResponse);
+    rpc ListPromocodes (ListPromocodesRequest) returns (ListPromocodesResponse);
+}
+
+message CreatePromocodeRequest {
+    string name = 1;
+    string description = 2;
+    float discount = 3;
+    string code = 4;
+    string creator_id = 5;
+}
+
+message GetPromocodeRequest {
+    string id = 1;
+    string user_id = 2;
+}
+
+message UpdatePromocodeRequest {
+    string id = 1;
+    string user_id = 2;
+    optional string name = 3;
+    optional string description = 4;
+    optional float discount = 5;
+    optional string code = 6;
+}
+
+message DeletePromocodeRequest {
+    string id = 1;
+    string user_id = 2;
+}
+
+message ListPromocodesRequest {
+    string user_id = 1;
+    int32 page = 2;
+    int32 per_page = 3;
+}
+
+message PromocodeResponse {
+    string id = 1;
+    string name = 2;
+    string description = 3;
+    string creator_id = 4;
+    float discount = 5;
+    string code = 6;
+    google.protobuf.Timestamp created_at = 7;
+    google.protobuf.Timestamp updated_at = 8;
+}
+
+message ListPromocodesResponse {
+    repeated PromocodeResponse promocodes = 1;
+    int32 total = 2;
+}
+
+message EmptyResponse {}

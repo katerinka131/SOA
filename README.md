@@ -14,9 +14,8 @@ curl -X POST http://localhost:8000/register -H "Content-Type: application/json" 
 
 
 ***проверка таблицы***
-
-sudo docker exec -it $(sudo docker ps -qf "name=db") psql -U user -d users -c "SELECT * FROM users;"
-
+sudo docker exec -it soa_hw2-user_db-1 psql -U user -d users -c "SELECT * FROM users;"
+  
 ***получение токена***
 
 curl -X POST http://localhost:8000/login \
@@ -47,3 +46,15 @@ curl -X PUT http://localhost:8000/update-profile \
   "phone": "+1234567890",
   "email": "newemail@example.com"
 }'
+
+PYTHONPATH=$(pwd):$(pwd)/user_api pytest system_api/test_system_api.py user_api/test_user_api.py
+
+PYTHONPATH=$(pwd):$(pwd)/grpc_server pytest grpc_server/test_posts.py
+
+PYTHONPATH=$(pwd):$(pwd)/grpc_server pytest grpc_server/test_promocodes.py
+{
+  "title": "Мой первый пост",
+  "description": "Это тестовое описание поста",
+  "is_private": false,
+  "tags": ["технологии", "тестирование"]
+}
